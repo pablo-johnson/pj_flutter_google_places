@@ -36,7 +36,7 @@ class PlacesAutocompleteField extends StatefulWidget {
   /// by the decoration to save space for the labels), set the [decoration] to
   /// null.
   const PlacesAutocompleteField({
-    Key? key,
+    super.key,
     required this.apiKey,
     this.controller,
     this.leading,
@@ -59,7 +59,7 @@ class PlacesAutocompleteField extends StatefulWidget {
     this.overlayBorderRadius,
     this.textStyle,
     this.textStyleFormField,
-  }) : super(key: key);
+  });
 
   /// Controls the text being edited.
   ///
@@ -165,30 +165,31 @@ class LocationAutocompleteFieldState extends State<PlacesAutocompleteField> {
       widget.controller!.text = oldWidget.controller!.text;
     }
     if (widget.controller == null && oldWidget.controller != null) {
-      _controller =
-          TextEditingController.fromValue(oldWidget.controller!.value);
+      _controller = TextEditingController.fromValue(
+        oldWidget.controller!.value,
+      );
     } else if (widget.controller != null && oldWidget.controller == null) {
       _controller = null;
     }
   }
 
-  Future<Prediction?> _showAutocomplete() async => PlacesAutocomplete.show(
-        context: context,
-        apiKey: widget.apiKey,
-        offset: widget.offset,
-        onError: widget.onError,
-        mode: widget.mode,
-        hint: widget.hint,
-        language: widget.language,
-        sessionToken: widget.sessionToken,
-        components: widget.components,
-        location: widget.location,
-        radius: widget.radius,
-        types: widget.types,
-        strictbounds: widget.strictbounds,
-        overlayBorderRadius: widget.overlayBorderRadius,
-        textStyle: widget.textStyle,
-      );
+  Future<Prediction?> _showAutocomplete() => PlacesAutocomplete.show(
+    context: context,
+    apiKey: widget.apiKey,
+    offset: widget.offset,
+    onError: widget.onError,
+    mode: widget.mode,
+    hint: widget.hint,
+    language: widget.language,
+    sessionToken: widget.sessionToken,
+    components: widget.components,
+    location: widget.location,
+    radius: widget.radius,
+    types: widget.types,
+    strictbounds: widget.strictbounds,
+    overlayBorderRadius: widget.overlayBorderRadius,
+    textStyle: widget.textStyle,
+  );
 
   Future<void> _handleTap() async {
     final Prediction? p = await _showAutocomplete();
@@ -210,36 +211,31 @@ class LocationAutocompleteFieldState extends State<PlacesAutocompleteField> {
         ? Text(
             controller.text,
             softWrap: true,
-            style: widget.textStyleFormField ??
+            style:
+                widget.textStyleFormField ??
                 const TextStyle(color: Colors.black38),
           )
         : Text(
             widget.hint,
-            style: widget.textStyleFormField ??
+            style:
+                widget.textStyleFormField ??
                 const TextStyle(color: Colors.black38),
           );
 
     Widget child = Row(
       children: <Widget>[
         widget.leading ?? const SizedBox(),
-        const SizedBox(
-          width: 16.0,
-        ),
-        Expanded(
-          child: text,
-        ),
+        const SizedBox(width: 16.0),
+        Expanded(child: text),
         if (widget.trailing != null)
           GestureDetector(
             onTap: widget.trailingOnTap,
             child: widget.trailingOnTap != null
                 ? widget.trailing
-                : Icon(
-                    widget.trailing!.icon,
-                    color: Colors.grey,
-                  ),
+                : Icon(widget.trailing!.icon, color: Colors.grey),
           )
         else
-          const SizedBox()
+          const SizedBox(),
       ],
     );
 

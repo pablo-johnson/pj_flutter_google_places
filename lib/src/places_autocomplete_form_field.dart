@@ -40,9 +40,9 @@ class PlacesAutocompleteFormField extends FormField<String> {
   /// to [initalValue] or the empty string.
   ///
   /// For documentation about the various parameters, see the [PlacesAutocompleteField] class
-  /// and [new PlacesAutocompleteField], the constructor.
+  /// and [PlacesAutocompleteField], the constructor.
   PlacesAutocompleteFormField({
-    Key? key,
+    super.key,
     required String apiKey,
     this.controller,
     Icon? leading,
@@ -61,45 +61,43 @@ class PlacesAutocompleteFormField extends FormField<String> {
     bool? strictbounds,
     ValueChanged<PlacesAutocompleteResponse>? onError,
     InputDecoration inputDecoration = const InputDecoration(),
-    AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
-    FormFieldSetter<String>? onSaved,
-    FormFieldValidator<String>? validator,
-  })  : assert(initialValue == null || controller == null),
-        super(
-          key: key,
-          initialValue:
-              controller != null ? controller.text : (initialValue ?? ''),
-          onSaved: onSaved,
-          validator: validator,
-          autovalidateMode: autovalidateMode,
-          builder: (FormFieldState<String> field) {
-            final TextFormFieldState state = field as TextFormFieldState;
-            final InputDecoration effectiveDecoration = inputDecoration
-                .applyDefaults(Theme.of(state.context).inputDecorationTheme);
-            return PlacesAutocompleteField(
-              key: key,
-              inputDecoration:
-                  effectiveDecoration.copyWith(errorText: state.errorText),
-              controller: state._effectiveController,
-              apiKey: apiKey,
-              leading: leading,
-              trailing: trailing,
-              offset: offset,
-              trailingOnTap: trailingOnTap,
-              hint: hint,
-              location: location,
-              radius: radius,
-              components: components,
-              language: language,
-              sessionToken: sessionToken,
-              types: types,
-              mode: mode,
-              strictbounds: strictbounds,
-              onChanged: state.didChange,
-              onError: onError,
-            );
-          },
-        );
+    AutovalidateMode super.autovalidateMode = AutovalidateMode.disabled,
+    super.onSaved,
+    super.validator,
+  }) : assert(initialValue == null || controller == null),
+       super(
+         initialValue: controller != null
+             ? controller.text
+             : (initialValue ?? ''),
+         builder: (FormFieldState<String> field) {
+           final TextFormFieldState state = field as TextFormFieldState;
+           final InputDecoration effectiveDecoration = inputDecoration
+               .applyDefaults(Theme.of(state.context).inputDecorationTheme);
+           return PlacesAutocompleteField(
+             key: key,
+             inputDecoration: effectiveDecoration.copyWith(
+               errorText: state.errorText,
+             ),
+             controller: state._effectiveController,
+             apiKey: apiKey,
+             leading: leading,
+             trailing: trailing,
+             offset: offset,
+             trailingOnTap: trailingOnTap,
+             hint: hint,
+             location: location,
+             radius: radius,
+             components: components,
+             language: language,
+             sessionToken: sessionToken,
+             types: types,
+             mode: mode,
+             strictbounds: strictbounds,
+             onChanged: state.didChange,
+             onError: onError,
+           );
+         },
+       );
 
   /// Controls the text being edited.
   ///
@@ -139,8 +137,9 @@ class TextFormFieldState extends FormFieldState<String> {
       widget.controller?.addListener(_handleControllerChanged);
 
       if (oldWidget.controller != null && widget.controller == null) {
-        _controller =
-            TextEditingController.fromValue(oldWidget.controller!.value);
+        _controller = TextEditingController.fromValue(
+          oldWidget.controller!.value,
+        );
       }
       if (widget.controller != null) {
         setValue(widget.controller!.text);

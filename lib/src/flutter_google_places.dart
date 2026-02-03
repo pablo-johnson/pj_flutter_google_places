@@ -1,4 +1,4 @@
-library flutter_google_places.src;
+// library flutter_google_places.src;
 
 import 'dart:async';
 
@@ -64,7 +64,7 @@ class PlacesAutocompleteWidget extends StatefulWidget {
     this.region,
     this.logo,
     this.onError,
-    Key? key,
+    super.key,
     this.proxyBaseUrl,
     this.httpClient,
     this.startText,
@@ -73,7 +73,7 @@ class PlacesAutocompleteWidget extends StatefulWidget {
     this.textStyle,
     this.themeData,
     this.resultTextStyle,
-  }) : super(key: key);
+  });
 
   @override
   State<PlacesAutocompleteWidget> createState() =>
@@ -116,7 +116,8 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
       final header = Column(
         children: <Widget>[
           Material(
-            color: theme.dialogBackgroundColor,
+            color:
+                theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
             borderRadius: BorderRadius.only(
               topLeft: headerTopLeftBorderRadius,
               topRight: headerTopRightBorderRadius,
@@ -165,7 +166,7 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
           _response == null ||
           _response!.predictions.isEmpty) {
         body = Material(
-          color: theme.dialogBackgroundColor,
+          color: theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
           borderRadius: BorderRadius.only(
             bottomLeft: bodyBottomLeftBorderRadius,
             bottomRight: bodyBottomRightBorderRadius,
@@ -179,7 +180,8 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
               bottomLeft: bodyBottomLeftBorderRadius,
               bottomRight: bodyBottomRightBorderRadius,
             ),
-            color: theme.dialogBackgroundColor,
+            color:
+                theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
             child: ListBody(
               children: _response!.predictions
                   .map(
@@ -220,27 +222,29 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
       : const Icon(Icons.arrow_back);
 
   Widget _textField(BuildContext context) => TextField(
-        controller: _queryTextController,
-        autofocus: true,
-        style: widget.textStyle ??
-            TextStyle(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.black87
-                  : null,
-              fontSize: 16.0,
-            ),
-        decoration: widget.decoration ??
-            InputDecoration(
-              hintText: widget.hint,
-              hintStyle: TextStyle(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.black45
-                    : null,
-                fontSize: 16.0,
-              ),
-              border: InputBorder.none,
-            ),
-      );
+    controller: _queryTextController,
+    autofocus: true,
+    style:
+        widget.textStyle ??
+        TextStyle(
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.black87
+              : null,
+          fontSize: 16.0,
+        ),
+    decoration:
+        widget.decoration ??
+        InputDecoration(
+          hintText: widget.hint,
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.black45
+                : null,
+            fontSize: 16.0,
+          ),
+          border: InputBorder.none,
+        ),
+  );
 }
 
 class _Loader extends StatelessWidget {
@@ -259,11 +263,11 @@ class PlacesAutocompleteResult extends StatefulWidget {
   final TextStyle? resultTextStyle;
 
   const PlacesAutocompleteResult({
-    Key? key,
+    super.key,
     this.onTap,
     this.logo,
     this.resultTextStyle,
-  }) : super(key: key);
+  });
 
   @override
   PlacesAutocompleteResultState createState() =>
@@ -298,10 +302,10 @@ class AppBarPlacesAutoCompleteTextField extends StatefulWidget {
   final TextStyle? textStyle;
 
   const AppBarPlacesAutoCompleteTextField({
-    Key? key,
+    super.key,
     this.textDecoration,
     this.textStyle,
-  }) : super(key: key);
+  });
 
   @override
   AppBarPlacesAutoCompleteTextFieldState createState() =>
@@ -347,8 +351,8 @@ class AppBarPlacesAutoCompleteTextFieldState
   TextStyle _defaultStyle() {
     return TextStyle(
       color: Theme.of(context).brightness == Brightness.light
-          ? Colors.black.withOpacity(0.9)
-          : Colors.white.withOpacity(0.9),
+          ? Colors.black.withValues(alpha: 0.9)
+          : Colors.white.withValues(alpha: 0.9),
       fontSize: 16.0,
     );
   }
@@ -360,7 +364,7 @@ class PoweredByGoogleImage extends StatelessWidget {
   static const _poweredByGoogleBlack =
       "packages/flutter_google_places/assets/google_black.png";
 
-  const PoweredByGoogleImage({Key? key}) : super(key: key);
+  const PoweredByGoogleImage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -387,11 +391,11 @@ class PredictionsListView extends StatelessWidget {
   final TextStyle? resultTextStyle;
 
   const PredictionsListView({
-    Key? key,
+    super.key,
     required this.predictions,
     this.onTap,
     this.resultTextStyle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -415,11 +419,11 @@ class PredictionTile extends StatelessWidget {
   final TextStyle? resultTextStyle;
 
   const PredictionTile({
-    Key? key,
+    super.key,
     required this.prediction,
     this.onTap,
     this.resultTextStyle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -606,7 +610,7 @@ class PlacesAutocomplete {
       return Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => autoCompleteWidget,
+          pageBuilder: (_, _, _) => autoCompleteWidget,
           transitionDuration: transitionDuration,
         ),
       );
