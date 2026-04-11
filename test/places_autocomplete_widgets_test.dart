@@ -225,6 +225,139 @@ class _StaleResponseHarness extends StatelessWidget {
   }
 }
 
+class _ControllerSwitchingFieldHarness extends StatefulWidget {
+  const _ControllerSwitchingFieldHarness();
+
+  @override
+  State<_ControllerSwitchingFieldHarness> createState() =>
+      _ControllerSwitchingFieldHarnessState();
+}
+
+class _ControllerSwitchingFieldHarnessState
+    extends State<_ControllerSwitchingFieldHarness> {
+  TextEditingController? _controller = TextEditingController(
+    text: 'External value',
+  );
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _removeController() {
+    final controller = _controller;
+    setState(() {
+      _controller = null;
+    });
+    controller?.dispose();
+  }
+
+  void _replaceController() {
+    final previous = _controller;
+    final replacement = TextEditingController(text: 'Replacement seed');
+    setState(() {
+      _controller = replacement;
+    });
+    previous?.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _removeController,
+              child: const Text('Remove controller'),
+            ),
+            ElevatedButton(
+              onPressed: _replaceController,
+              child: const Text('Replace controller'),
+            ),
+            PlacesAutocompleteField(
+              apiKey: 'test-key',
+              controller: _controller,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FormResetHarness extends StatefulWidget {
+  const _FormResetHarness({required this.withController});
+
+  final bool withController;
+
+  @override
+  State<_FormResetHarness> createState() => _FormResetHarnessState();
+}
+
+class _FormResetHarnessState extends State<_FormResetHarness> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: 'Initial external');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _mutateValue() {
+    if (widget.withController) {
+      _controller.text = 'Changed external';
+    }
+  }
+
+  void _resetForm() {
+    _formKey.currentState!.reset();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _mutateValue,
+                child: const Text('Mutate value'),
+              ),
+              ElevatedButton(
+                onPressed: _resetForm,
+                child: const Text('Reset form'),
+              ),
+              PlacesAutocompleteFormField(
+                apiKey: 'test-key',
+                controller: widget.withController ? _controller : null,
+                httpClient: _fakePlacesClient(),
+                initialValue: widget.withController ? null : 'Initial internal',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Required';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -357,6 +490,83 @@ void main() {
     expect(find.text('Beta Place'), findsOneWidget);
     expect(find.text('Alpha Place'), findsNothing);
   });
+
+  testWidgets(
+    'PlacesAutocompleteField preserves text when switching from external to internal controller',
+    (tester) async {
+      await tester.pumpWidget(const _ControllerSwitchingFieldHarness());
+
+      expect(find.text('External value'), findsOneWidget);
+
+      await tester.tap(find.text('Remove controller'));
+      await tester.pump();
+
+      expect(find.text('External value'), findsOneWidget);
+      expect(find.text('Search'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'PlacesAutocompleteField preserves text when replacing the external controller',
+    (tester) async {
+      await tester.pumpWidget(const _ControllerSwitchingFieldHarness());
+
+      expect(find.text('External value'), findsOneWidget);
+
+      await tester.tap(find.text('Replace controller'));
+      await tester.pump();
+
+      expect(find.text('External value'), findsOneWidget);
+      expect(find.text('Replacement seed'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'PlacesAutocompleteFormField reset restores the initial internal value',
+    (tester) async {
+      await tester.pumpWidget(const _FormResetHarness(withController: false));
+
+      expect(find.text('Initial internal'), findsOneWidget);
+
+      await tester.tap(find.byType(PlacesAutocompleteField));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Test');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Test Place'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Test Place'), findsOneWidget);
+
+      await tester.tap(find.text('Reset form'));
+      await tester.pump();
+
+      expect(find.text('Initial internal'), findsOneWidget);
+      expect(find.text('Test Place'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'PlacesAutocompleteFormField reset restores the external controller value',
+    (tester) async {
+      await tester.pumpWidget(const _FormResetHarness(withController: true));
+
+      expect(find.text('Initial external'), findsOneWidget);
+
+      await tester.tap(find.text('Mutate value'));
+      await tester.pump();
+
+      expect(find.text('Changed external'), findsOneWidget);
+
+      await tester.tap(find.text('Reset form'));
+      await tester.pump();
+
+      expect(find.text('Initial external'), findsOneWidget);
+      expect(find.text('Changed external'), findsNothing);
+    },
+  );
 
   testWidgets(
     'PlacesAutocomplete fullscreen flow uses app bar search field and selects prediction',
