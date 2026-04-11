@@ -1,114 +1,128 @@
+# Changelog
+
+## 0.6.0
+
+- Upgraded the package to `google_maps_apis` and re-exported Places types from the main package import.
+- Updated SDK constraints for modern Dart and Flutter releases.
+- Added a widget test baseline covering overlay mode, fullscreen mode, form integration, and field rendering.
+- Hardened autocomplete request handling to ignore stale responses and surface transport failures through `onError`.
+- Added `httpClient` and `proxyBaseUrl` support to `PlacesAutocompleteField` and `PlacesAutocompleteFormField` so inline widgets match `PlacesAutocomplete.show`.
+- Fixed controller ownership and disposal edge cases in the inline and form field widgets.
+- Refreshed README examples to match the 0.6.0 API and document proxy/custom-client support on field widgets.
+
 ## 0.4.0
-New Features:
-- Add textStyle and borderRadius fields to PlacesAutocompleteField() 
-- Add resultTextStyle to PlacesAutocompleteWidget()
+
+New features:
+
+- Add `textStyle` and `borderRadius` fields to `PlacesAutocompleteField()`.
+- Add `resultTextStyle` to `PlacesAutocompleteWidget()`.
 
 Other improvements:
-- Migrated flutter_lints to lint and applied all suggestions.
-- Updated rxdart to latest version.
+
+- Migrate from `flutter_lints` to `lint` and apply all suggestions.
+- Update `rxdart` to the latest version.
 
 ## 0.3.2
 
-- Updated google_api_headers to 1.2.0
-
+- Update `google_api_headers` to 1.2.0.
 
 ## 0.3.1
 
-- Fixed null-pointer which caused the package to crash.
-- Upgrade example app to null safety
-- Applied flutter lints recommendations
-- Upgraded dependencies
+- Fix the null-pointer crash.
+- Upgrade the example app to null safety.
+- Apply Flutter lint recommendations.
+- Upgrade dependencies.
 
 ## 0.3.0
 
-- Update packages
-- Upgrade to null safety
-- Upgrade and migrate android project to AndroidX
-- PlacesAutocompleteFormField: replaced deprecated autovalidate with autovalidateMode
-- PlacesAutocompleteWidget: removed deprecated methods, added decoration for fullscreen and overlay places widget
+- Update packages.
+- Upgrade to null safety.
+- Upgrade and migrate the Android project to AndroidX.
+- Replace deprecated `autovalidate` with `autovalidateMode` in `PlacesAutocompleteFormField`.
+- Remove deprecated methods and add `decoration` support for fullscreen and overlay widgets.
 
 ## 0.2.8
 
-- Fix pub.dev complaints
-  - Remove unsecure links
-  - Replace deprecated `autovalidate` bool with `AutovalidateMode`
-  - Formated with dartfmt
+- Fix pub.dev complaints.
+- Remove insecure links.
+- Replace deprecated `autovalidate` bool with `AutovalidateMode`.
+- Format with `dartfmt`.
 
 ## 0.2.7
 
-- Add expected label behaviour to PlacesAutocompleteField (PR #108)
-- Auto select text (PR #109)
-- Add to support app restricted API keys (PR #136)
-- Replaced deprecated `ancestorStateOfType` method (PR #141)
-- Updating rxdart version in pubspec.yaml (PR #143)
+- Add expected label behavior to `PlacesAutocompleteField`.
+- Auto-select text.
+- Add support for app-restricted API keys.
+- Replace deprecated `ancestorStateOfType` usage.
+- Update the `rxdart` version in `pubspec.yaml`.
 
 ## 0.2.6
 
-- Fix error on select place
-- Fix bug where `controller.text` is not properly updated
-- Fix issue when close the widget and "_queryBehavior" is trying to add text
+- Fix errors when selecting a place.
+- Fix the case where `controller.text` was not updated correctly.
+- Fix the issue where `_queryBehavior` tried to emit after the widget was closed.
 
 ## 0.2.5
 
-- Updates rxdart to 0.24.0
-- Updates google_maps_webservice to 0.0.16
+- Update `rxdart` to 0.24.0.
+- Update `google_maps_webservice` to 0.0.16.
 
 ## 0.2.4
 
-- Added support for flutter web
-- Update rxdart
-- Add overlayBorderRadius parameter
-- Add startText parameter
+- Add Flutter web support.
+- Update `rxdart`.
+- Add `overlayBorderRadius`.
+- Add `startText`.
 
 ## 0.2.3
 
-- Update rxdart and google_maps_webservice
+- Update `rxdart` and `google_maps_webservice`.
 
 ## 0.2.0
 
-- Better text theme for text input
-- Allow proxyUrl with `proxyBaseUrl` and override http client with `httpClient`
+- Improve the text theme for text input.
+- Allow proxy URLs with `proxyBaseUrl` and custom HTTP clients with `httpClient`.
 
 ## 0.1.4
 
-- Rename footer to logo to be less confusing
+- Rename `footer` to `logo` for clarity.
 
 ## 0.1.3
 
-- Update rxdart
+- Update `rxdart`.
 
 ## 0.1.2
 
-- Fix dark mode
+- Fix dark mode.
 
 ## 0.1.1
 
-- Fix icons quality
-- Fix input border when custom theme
+- Fix icon quality.
+- Fix input borders when using a custom theme.
 
 ## 0.1.0
 
-- Update sdk and fix warnings
+- Update the SDK and fix warnings.
 
 ## 0.0.5
 
-- Fix usage of radius
+- Fix `radius` handling.
 
 ## 0.0.4
 
-- Open widgets to create your own UI
-- Add onError callback
+- Open widgets so consumers can build custom UI.
+- Add the `onError` callback.
 
 ## 0.0.3
 
-- Add padding for overlay on iOS
+- Add padding for overlay mode on iOS.
 
 ## 0.0.2
 
-- Update google_maps_webservice to ^0.0.3
-- Fix placeholder position
-- Fix keyboard clipping on overlay
+- Update `google_maps_webservice` to `^0.0.3`.
+- Fix placeholder positioning.
+- Fix keyboard clipping on overlay.
 
 ## 0.0.1
 
-- Initial version
+- Initial version.

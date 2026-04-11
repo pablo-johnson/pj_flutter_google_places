@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/src/flutter_google_places.dart';
 import 'package:google_maps_apis/places.dart';
+import 'package:http/http.dart';
 
 /// A text field like widget to input places with autocomplete.
 ///
@@ -59,6 +60,8 @@ class PlacesAutocompleteField extends StatefulWidget {
     this.overlayBorderRadius,
     this.textStyle,
     this.textStyleFormField,
+    this.proxyBaseUrl,
+    this.httpClient,
   });
 
   /// Controls the text being edited.
@@ -142,6 +145,10 @@ class PlacesAutocompleteField extends StatefulWidget {
 
   final TextStyle? textStyleFormField;
 
+  final String? proxyBaseUrl;
+
+  final BaseClient? httpClient;
+
   @override
   LocationAutocompleteFieldState createState() =>
       LocationAutocompleteFieldState();
@@ -161,16 +168,30 @@ class LocationAutocompleteFieldState extends State<PlacesAutocompleteField> {
   @override
   void didUpdateWidget(PlacesAutocompleteField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller != null) {
-      widget.controller!.text = oldWidget.controller!.text;
-    }
+    final previousValue = oldWidget.controller?.value ?? _controller?.value;
+
     if (widget.controller == null && oldWidget.controller != null) {
       _controller = TextEditingController.fromValue(
         oldWidget.controller!.value,
       );
     } else if (widget.controller != null && oldWidget.controller == null) {
+      if (previousValue != null) {
+        widget.controller!.value = previousValue;
+      }
+      _controller?.dispose();
       _controller = null;
+    } else if (widget.controller != null &&
+        oldWidget.controller != null &&
+        widget.controller != oldWidget.controller &&
+        previousValue != null) {
+      widget.controller!.value = previousValue;
     }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   Future<Prediction?> _showAutocomplete() => PlacesAutocomplete.show(
@@ -189,12 +210,14 @@ class LocationAutocompleteFieldState extends State<PlacesAutocompleteField> {
     strictbounds: widget.strictbounds,
     overlayBorderRadius: widget.overlayBorderRadius,
     textStyle: widget.textStyle,
+    proxyBaseUrl: widget.proxyBaseUrl,
+    httpClient: widget.httpClient,
   );
 
   Future<void> _handleTap() async {
     final Prediction? p = await _showAutocomplete();
 
-    if (p == null) return;
+    if (!mounted || p == null) return;
 
     setState(() {
       _effectiveController!.text = p.description!;

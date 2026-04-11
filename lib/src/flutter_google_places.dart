@@ -449,8 +449,11 @@ abstract class PlacesAutocompleteState extends State<PlacesAutocompleteWidget> {
   TextEditingController? _queryTextController;
   PlacesAutocompleteResponse? _response;
   GoogleMapsPlaces? _places;
+  StreamSubscription<String>? _querySubscription;
   late bool _searching;
   Timer? _debounce;
+  int _searchRequestId = 0;
+  String? _pendingQuery;
 
   final _queryBehavior = BehaviorSubject<String>.seeded('');
 
@@ -469,24 +472,55 @@ abstract class PlacesAutocompleteState extends State<PlacesAutocompleteWidget> {
 
     _queryTextController!.addListener(_onQueryChange);
 
-    _queryBehavior.stream.listen(doSearch);
+    _querySubscription = _queryBehavior.stream.listen(doSearch);
   }
 
   Future<void> _initPlaces() async {
-    _places = GoogleMapsPlaces(
+    final places = GoogleMapsPlaces(
       apiKey: widget.apiKey,
       baseUrl: widget.proxyBaseUrl,
       httpClient: widget.httpClient,
       apiHeaders: await const GoogleApiHeaders().getHeaders(),
     );
+
+    if (!mounted) {
+      places.dispose();
+      return;
+    }
+
+    _places = places;
+
+    final pendingQuery = _pendingQuery;
+    if (pendingQuery?.isNotEmpty == true) {
+      _pendingQuery = null;
+      await doSearch(pendingQuery!);
+    }
   }
 
   Future<void> doSearch(String value) async {
-    if (mounted && value.isNotEmpty && _places != null) {
-      setState(() {
-        _searching = true;
-      });
+    if (!mounted) {
+      return;
+    }
 
+    if (value.isEmpty) {
+      _pendingQuery = null;
+      onResponse(null);
+      return;
+    }
+
+    if (_places == null) {
+      _pendingQuery = value;
+      return;
+    }
+
+    _pendingQuery = null;
+    final requestId = ++_searchRequestId;
+
+    setState(() {
+      _searching = true;
+    });
+
+    try {
       final res = await _places!.autocomplete(
         value,
         offset: widget.offset,
@@ -500,14 +534,28 @@ abstract class PlacesAutocompleteState extends State<PlacesAutocompleteWidget> {
         region: widget.region,
       );
 
+      if (!mounted || requestId != _searchRequestId) {
+        return;
+      }
+
       if (res.errorMessage?.isNotEmpty == true ||
-          res.status == "REQUEST_DENIED") {
+          res.status == ResponseStatus.requestDenied) {
         onResponseError(res);
       } else {
         onResponse(res);
       }
-    } else {
-      onResponse(null);
+    } catch (error) {
+      if (!mounted || requestId != _searchRequestId) {
+        return;
+      }
+
+      onResponseError(
+        PlacesAutocompleteResponse(
+          status: ResponseStatus.unknownError,
+          errorMessage: error.toString(),
+          predictions: const <Prediction>[],
+        ),
+      );
     }
   }
 
@@ -522,12 +570,14 @@ abstract class PlacesAutocompleteState extends State<PlacesAutocompleteWidget> {
 
   @override
   void dispose() {
-    super.dispose();
-
+    _queryTextController?.removeListener(_onQueryChange);
     _places?.dispose();
     _debounce?.cancel();
+    _querySubscription?.cancel();
     _queryBehavior.close();
-    _queryTextController?.removeListener(_onQueryChange);
+    _queryTextController?.dispose();
+
+    super.dispose();
   }
 
   @mustCallSuper

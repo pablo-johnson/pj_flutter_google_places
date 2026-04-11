@@ -31,7 +31,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_google_places: ^0.5.0
+  flutter_google_places: ^0.6.0
 ```
 
 Then run:
@@ -168,6 +168,8 @@ Prediction? p = await PlacesAutocomplete.show(
 );
 ```
 
+The `onError` callback is invoked for both API-level failures, such as `REQUEST_DENIED`, and transport failures, such as network or proxy errors.
+
 ## PlacesAutocompleteField Widget
 
 For inline autocomplete in forms:
@@ -186,6 +188,8 @@ PlacesAutocompleteField(
 )
 ```
 
+`PlacesAutocompleteField` also supports `proxyBaseUrl` and `httpClient`, matching `PlacesAutocomplete.show` for proxy-backed or authenticated requests.
+
 ## PlacesAutocompleteFormField Widget
 
 For form validation support:
@@ -202,11 +206,13 @@ PlacesAutocompleteFormField(
     }
     return null;
   },
-  onSaved: (prediction) {
-    // Save prediction
+  onSaved: (value) {
+    // Save the selected address string
   },
 )
 ```
+
+`PlacesAutocompleteFormField` forwards the same `proxyBaseUrl` and `httpClient` options to the underlying autocomplete field.
 
 ## API Reference
 

@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-http.Client _fakePlacesClient() {
+http.BaseClient _fakePlacesClient() {
   return MockClient((request) async {
     if (request.url.path.endsWith('/autocomplete/json')) {
       return http.Response(
@@ -23,6 +23,42 @@ http.Client _fakePlacesClient() {
 
     return http.Response(
       jsonEncode({'status': 'ZERO_RESULTS', 'predictions': []}),
+      200,
+      headers: const {'content-type': 'application/json; charset=utf-8'},
+    );
+  });
+}
+
+http.BaseClient _throwingPlacesClient() {
+  return MockClient((request) {
+    throw Exception('network down');
+  });
+}
+
+http.BaseClient _staleAwarePlacesClient() {
+  return MockClient((request) async {
+    final input = request.url.queryParameters['input'];
+    if (input == 'A') {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      return http.Response(
+        jsonEncode({
+          'status': 'OK',
+          'predictions': [
+            {'description': 'Alpha Place', 'place_id': 'place-alpha'},
+          ],
+        }),
+        200,
+        headers: const {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
+
+    return http.Response(
+      jsonEncode({
+        'status': 'OK',
+        'predictions': [
+          {'description': 'Beta Place', 'place_id': 'place-beta'},
+        ],
+      }),
       200,
       headers: const {'content-type': 'application/json; charset=utf-8'},
     );
@@ -48,7 +84,6 @@ class _AutocompleteFlowHarnessState extends State<_AutocompleteFlowHarness> {
       apiKey: 'test-key',
       mode: widget.mode,
       httpClient: _fakePlacesClient(),
-      onError: (_) {},
     );
 
     if (!mounted) return;
@@ -82,6 +117,114 @@ class _AutocompleteFlowHarnessState extends State<_AutocompleteFlowHarness> {
   }
 }
 
+class _AutocompleteErrorHarness extends StatefulWidget {
+  const _AutocompleteErrorHarness();
+
+  @override
+  State<_AutocompleteErrorHarness> createState() =>
+      _AutocompleteErrorHarnessState();
+}
+
+class _AutocompleteErrorHarnessState extends State<_AutocompleteErrorHarness> {
+  String _error = 'No error';
+
+  Future<void> _openAutocomplete(BuildContext context) async {
+    await PlacesAutocomplete.show(
+      context: context,
+      apiKey: 'test-key',
+      mode: Mode.overlay,
+      httpClient: _throwingPlacesClient(),
+      onError: (response) {
+        if (!mounted) return;
+        setState(() {
+          _error = '${response.status.name}: ${response.errorMessage}';
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(
+        builder: (innerContext) {
+          return Scaffold(
+            body: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () => _openAutocomplete(innerContext),
+                  child: const Text('Open autocomplete'),
+                ),
+                Text(_error),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PlacesAutocompleteFieldHarness extends StatefulWidget {
+  const _PlacesAutocompleteFieldHarness();
+
+  @override
+  State<_PlacesAutocompleteFieldHarness> createState() =>
+      _PlacesAutocompleteFieldHarnessState();
+}
+
+class _PlacesAutocompleteFieldHarnessState
+    extends State<_PlacesAutocompleteFieldHarness> {
+  final TextEditingController _controller = TextEditingController();
+  String _selected = 'No selection yet';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            PlacesAutocompleteField(
+              apiKey: 'test-key',
+              controller: _controller,
+              httpClient: _fakePlacesClient(),
+              onSelected: (prediction) {
+                setState(() {
+                  _selected = prediction.description ?? 'Missing description';
+                });
+              },
+            ),
+            Text('Selected: $_selected'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StaleResponseHarness extends StatelessWidget {
+  const _StaleResponseHarness();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: PlacesAutocompleteWidget(
+          apiKey: 'test-key',
+          mode: Mode.overlay,
+          httpClient: _staleAwarePlacesClient(),
+        ),
+      ),
+    );
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -96,7 +239,6 @@ void main() {
           body: PlacesAutocompleteField(
             apiKey: 'test-key',
             controller: controller,
-            inputDecoration: const InputDecoration(),
           ),
         ),
       ),
@@ -165,6 +307,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Selected: Test Place'), findsOneWidget);
+  });
+
+  testWidgets('PlacesAutocompleteField updates controller and onSelected', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const _PlacesAutocompleteFieldHarness());
+
+    await tester.tap(find.byType(PlacesAutocompleteField));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Test');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Test Place'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Test Place'), findsOneWidget);
+    expect(find.text('Selected: Test Place'), findsOneWidget);
+  });
+
+  testWidgets('PlacesAutocomplete reports transport failures via onError', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const _AutocompleteErrorHarness());
+
+    await tester.tap(find.text('Open autocomplete'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Test');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('unknownError:'), findsOneWidget);
+    expect(find.textContaining('network down'), findsOneWidget);
+  });
+
+  testWidgets('PlacesAutocomplete ignores stale responses', (tester) async {
+    await tester.pumpWidget(const _StaleResponseHarness());
+
+    await tester.enterText(find.byType(TextField), 'A');
+    await tester.pump(const Duration(milliseconds: 350));
+
+    await tester.enterText(find.byType(TextField), 'AB');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Beta Place'), findsOneWidget);
+    expect(find.text('Alpha Place'), findsNothing);
   });
 
   testWidgets(

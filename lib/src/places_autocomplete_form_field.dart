@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_google_places/src/flutter_google_places.dart';
 import 'package:flutter_google_places/src/places_autocomplete_field.dart';
 import 'package:google_maps_apis/places.dart';
+import 'package:http/http.dart';
 
 /// A [FormField] that contains a [PlacesAutocompleteField].
 ///
@@ -60,6 +61,8 @@ class PlacesAutocompleteFormField extends FormField<String> {
     List<Component>? components,
     bool? strictbounds,
     ValueChanged<PlacesAutocompleteResponse>? onError,
+    String? proxyBaseUrl,
+    BaseClient? httpClient,
     InputDecoration inputDecoration = const InputDecoration(),
     AutovalidateMode super.autovalidateMode = AutovalidateMode.disabled,
     super.onSaved,
@@ -93,6 +96,8 @@ class PlacesAutocompleteFormField extends FormField<String> {
              types: types,
              mode: mode,
              strictbounds: strictbounds,
+             proxyBaseUrl: proxyBaseUrl,
+             httpClient: httpClient,
              onChanged: state.didChange,
              onError: onError,
            );
@@ -151,6 +156,7 @@ class TextFormFieldState extends FormFieldState<String> {
   @override
   void dispose() {
     widget.controller?.removeListener(_handleControllerChanged);
+    _controller?.dispose();
     super.dispose();
   }
 
