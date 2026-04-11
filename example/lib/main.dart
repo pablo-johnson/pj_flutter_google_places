@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:google_maps_apis/places.dart';
 
 const kGoogleApiKey = "API_KEY";
 
@@ -128,8 +128,10 @@ Future<void> displayPrediction(Prediction? p, BuildContext context) async {
       apiHeaders: await const GoogleApiHeaders().getHeaders(),
     );
     PlacesDetailsResponse detail = await places.getDetailsByPlaceId(p.placeId!);
-    final lat = detail.result.geometry!.location.lat;
-    final lng = detail.result.geometry!.location.lng;
+    final geometry = detail.result?.geometry;
+    if (geometry == null) return;
+    final lat = geometry.location.lat;
+    final lng = geometry.location.lng;
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(
@@ -181,7 +183,7 @@ class CustomSearchScaffoldState extends PlacesAutocompleteState {
   @override
   void onResponse(PlacesAutocompleteResponse? res) {
     super.onResponse(res);
-    if (res != null && res.predictions.isNotEmpty) {
+    if (res != null && (res.predictions?.isNotEmpty ?? false)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Got answer")));

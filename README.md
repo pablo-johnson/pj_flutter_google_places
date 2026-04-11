@@ -4,7 +4,7 @@
 
 [![Pub](https://img.shields.io/pub/v/flutter_google_places.svg)](https://pub.dartlang.org/packages/flutter_google_places)
 
-A Flutter package providing Google Places autocomplete widgets with no wrapper complexity. Built on top of [google_maps_webservice](https://github.com/lejard-h/google_maps_webservice) and directly implements the official [Google Maps Web Services API](https://developers.google.com/maps/web-services/).
+A Flutter package providing Google Places autocomplete widgets with no wrapper complexity. Built on top of [google_maps_apis](https://pub.dev/packages/google_maps_apis) and directly implements the official [Google Maps Web Services API](https://developers.google.com/maps/web-services/).
 
 ## Features
 
@@ -45,7 +45,6 @@ flutter pub get
 
 ```dart
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
 
 const kGoogleApiKey = "YOUR_API_KEY";
 
@@ -339,7 +338,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This package is maintained by the [Flutter Community](https://github.com/fluttercommunity).
 
-Built with [google_maps_webservice](https://github.com/lejard-h/google_maps_webservice) by [@lejard-h](https://github.com/lejard-h).
+Built with [google_maps_apis](https://pub.dev/packages/google_maps_apis) by the package maintainers.
 
 ## Support
 

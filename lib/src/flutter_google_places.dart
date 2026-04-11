@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_api_headers/google_api_headers.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:google_maps_apis/places.dart';
 import 'package:http/http.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -164,7 +164,7 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
         );
       } else if (_queryTextController!.text.isEmpty ||
           _response == null ||
-          _response!.predictions.isEmpty) {
+          _response!.predictions?.isEmpty != false) {
         body = Material(
           color: theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
           borderRadius: BorderRadius.only(
@@ -174,6 +174,8 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
           child: widget.logo ?? const PoweredByGoogleImage(),
         );
       } else {
+        final predictions = _response!.predictions ?? const <Prediction>[];
+
         body = SingleChildScrollView(
           child: Material(
             borderRadius: BorderRadius.only(
@@ -183,7 +185,7 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
             color:
                 theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
             child: ListBody(
-              children: _response!.predictions
+              children: predictions
                   .map(
                     (p) => PredictionTile(
                       prediction: p,
@@ -281,7 +283,7 @@ class PlacesAutocompleteResultState extends State<PlacesAutocompleteResult> {
 
     if (state._queryTextController!.text.isEmpty ||
         state._response == null ||
-        state._response!.predictions.isEmpty) {
+        state._response!.predictions?.isEmpty != false) {
       final children = <Widget>[];
       if (state._searching) {
         children.add(_Loader());
@@ -289,8 +291,9 @@ class PlacesAutocompleteResultState extends State<PlacesAutocompleteResult> {
       children.add(widget.logo ?? const PoweredByGoogleImage());
       return Stack(children: children);
     }
+    final predictions = state._response!.predictions ?? const <Prediction>[];
     return PredictionsListView(
-      predictions: state._response!.predictions,
+      predictions: predictions,
       onTap: widget.onTap,
       resultTextStyle: widget.resultTextStyle,
     );

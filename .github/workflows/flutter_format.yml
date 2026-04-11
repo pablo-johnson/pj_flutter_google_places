@@ -19,6 +19,8 @@ jobs:
         run: flutter pub get
       - name: Linter
         run: flutter analyze
+      - name: Run tests
+        run: flutter test
   formatting:
     runs-on: ubuntu-latest
     steps:
