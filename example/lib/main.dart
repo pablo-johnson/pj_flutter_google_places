@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:google_api_headers/google_api_headers.dart';
 import 'package:flutter/material.dart';
+import 'package:google_api_headers/google_api_headers.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_apis/places.dart';
 
 const kGoogleApiKey = "API_KEY";
 
@@ -27,7 +26,7 @@ class RoutesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: "My App",
+    title: "flutter_google_places example",
     darkTheme: customTheme,
     themeMode: ThemeMode.dark,
     routes: {
@@ -54,7 +53,7 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: homeScaffoldKey,
-      appBar: AppBar(title: const Text("My App")),
+      appBar: AppBar(title: const Text("flutter_google_places")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +61,7 @@ class MyAppState extends State<MyApp> {
             _buildDropdownMenu(),
             ElevatedButton(
               onPressed: _handlePressButton,
-              child: const Text("Search places"),
+              child: const Text("Open autocomplete"),
             ),
             ElevatedButton(
               child: const Text("Custom"),
@@ -96,9 +95,7 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> _handlePressButton() async {
-    // show input autocomplete with selected mode
-    // then get the Prediction selected
-    Prediction? p = await PlacesAutocomplete.show(
+    final Prediction? prediction = await PlacesAutocomplete.show(
       context: context,
       apiKey: kGoogleApiKey,
       onError: onError,
@@ -115,7 +112,7 @@ class MyAppState extends State<MyApp> {
     );
 
     if (mounted) {
-      displayPrediction(p, context);
+      displayPrediction(prediction, context);
     }
   }
 }
@@ -140,9 +137,6 @@ Future<void> displayPrediction(Prediction? p, BuildContext context) async {
   }
 }
 
-// custom scaffold that handle search
-// basically your widget need to extends [GooglePlacesAutocompleteWidget]
-// and your state [GooglePlacesAutocompleteState]
 class CustomSearchScaffold extends PlacesAutocompleteWidget {
   CustomSearchScaffold({super.key})
     : super(
@@ -159,17 +153,19 @@ class CustomSearchScaffold extends PlacesAutocompleteWidget {
 class CustomSearchScaffoldState extends PlacesAutocompleteState {
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar(title: const AppBarPlacesAutoCompleteTextField());
-    final body = PlacesAutocompleteResult(
-      onTap: (p) {
-        displayPrediction(p, context);
-      },
-      logo: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [FlutterLogo()],
+    return Scaffold(
+      key: searchScaffoldKey,
+      appBar: AppBar(title: const AppBarPlacesAutoCompleteTextField()),
+      body: PlacesAutocompleteResult(
+        onTap: (prediction) {
+          displayPrediction(prediction, context);
+        },
+        logo: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [FlutterLogo()],
+        ),
       ),
     );
-    return Scaffold(key: searchScaffoldKey, appBar: appBar, body: body);
   }
 
   @override

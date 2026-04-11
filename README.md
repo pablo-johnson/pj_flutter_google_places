@@ -5,6 +5,7 @@
 [![Pub](https://img.shields.io/pub/v/flutter_google_places.svg)](https://pub.dartlang.org/packages/flutter_google_places)
 
 A Flutter package providing Google Places autocomplete widgets with no wrapper complexity. Built on top of [google_maps_apis](https://pub.dev/packages/google_maps_apis) and directly implements the official [Google Maps Web Services API](https://developers.google.com/maps/web-services/).
+The package re-exports the Places API types from the same public import, so `import 'package:flutter_google_places/flutter_google_places.dart';` is enough for both widgets and response models.
 
 ## Features
 
@@ -74,15 +75,6 @@ Prediction? p = await PlacesAutocomplete.show(
   context: context,
   apiKey: kGoogleApiKey,
   mode: Mode.overlay, // Popup overlay
-);
-```
-
-#### Fullscreen Mode
-```dart
-Prediction? p = await PlacesAutocomplete.show(
-  context: context,
-  apiKey: kGoogleApiKey,
-  mode: Mode.fullscreen, // Full page
 );
 ```
 
@@ -176,18 +168,6 @@ Prediction? p = await PlacesAutocomplete.show(
 );
 ```
 
-### Debounce Configuration
-
-Control search delay to reduce API calls:
-
-```dart
-Prediction? p = await PlacesAutocomplete.show(
-  context: context,
-  apiKey: kGoogleApiKey,
-  debounce: 500, // 500ms delay (default: 300ms)
-);
-```
-
 ## PlacesAutocompleteField Widget
 
 For inline autocomplete in forms:
@@ -199,7 +179,7 @@ PlacesAutocompleteField(
   language: 'en',
   components: [Component(Component.country, 'us')],
   textStyle: TextStyle(fontSize: 16),
-  borderRadius: BorderRadius.circular(8),
+  overlayBorderRadius: BorderRadius.circular(8),
   onSelected: (prediction) {
     print('Selected: ${prediction.description}');
   },
@@ -213,6 +193,9 @@ For form validation support:
 ```dart
 PlacesAutocompleteFormField(
   apiKey: kGoogleApiKey,
+  inputDecoration: const InputDecoration(
+    labelText: 'Destination',
+  ),
   validator: (value) {
     if (value == null || value.isEmpty) {
       return 'Please select a location';
@@ -250,22 +233,9 @@ PlacesAutocompleteFormField(
 | `resultTextStyle` | `TextStyle?` | Text style for results |
 | `overlayBorderRadius` | `BorderRadius?` | Border radius for overlay |
 | `logo` | `Widget?` | Custom logo widget |
-| `debounce` | `int` | Debounce delay in milliseconds |
 | `proxyBaseUrl` | `String?` | Proxy server URL |
 | `httpClient` | `BaseClient?` | Custom HTTP client |
 | `onError` | `ValueChanged?` | Error callback |
-
-## Screenshots 
-<div style="text-align: center"><table><tr>
-    <td style="text-align: center">
-<img src="https://raw.githubusercontent.com/fluttercommunity/flutter_google_places/master/flutter_01.png" height="400">
-</td>
-<td style="text-align: center">
-<img src="https://raw.githubusercontent.com/fluttercommunity/flutter_google_places/master/flutter_02.png" height="400">
-</td>
-</tr>
-</table>
-</div>
 
 ## Screenshots
 
@@ -309,7 +279,9 @@ PlacesAutocompleteFormField(
 
 ## Example App
 
-View the complete Flutter app in the [`example`](example/) directory to see all features in action.
+View the complete Flutter app in the [`example`](example/) directory to see the public API in action.
+
+The example intentionally uses the same public import as consumers: [lib/flutter_google_places.dart](lib/flutter_google_places.dart).
 
 ```bash
 cd example
